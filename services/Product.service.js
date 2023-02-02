@@ -1,35 +1,60 @@
-import {Router} from "express";
-import {deleteProduct, getPage, upsertProduct, findById} from "../repositories/Product.model";
+import { Router } from "express";
+import {
+  deleteProduct,
+  getPage,
+  upsertProduct,
+  findById,
+  findAll,
+} from "../repositories/Product.model";
 const router = Router();
+
+router.get("/product", (req, res) => {
+  findAll()
+    .then((data) => {
+      res.status(200).json({ data: data });
+    })
+    .catch((ex) => {
+      console.log("Error happened", ex);
+      res.status(203).json({
+        status: false,
+        message: "Có lỗi khi không tìm thấy sản phẩm",
+      });
+    });
+});
 
 /**
  * Tìm kiếm products theo tiêu chí tìm kiếm, hiện support tìm theo code, tên, trạng thái, nhà cung cấp
  * @searchby code, name, supplier, status
  */
-router.get('/search', (req, res) => {
-  const {code, name, status, supplier, pageIndex, pageSize} = req.query;
-  getPage({pageIndex, pageSize, code, name, status, supplier}).then((data) => {
-    res.send(data);
-  }).catch((ex) => {
-    console.log("Error happened", ex);
-    res.send({ status: false, message: "Có lỗi khi tìm kiếm sản phẩm" });
-  })
+
+router.get("/search", (req, res) => {
+  const { code, name, status, supplier, pageIndex, pageSize } = req.query;
+  getPage({ pageIndex, pageSize, code, name, status, supplier })
+    .then((data) => {
+      res.send(data);
+    })
+    .catch((ex) => {
+      console.log("Error happened", ex);
+      res.send({ status: false, message: "Có lỗi khi tìm kiếm sản phẩm" });
+    });
 });
 
-router.post('/create', (req, res) => {
+router.post("/create", (req, res) => {
   const payload = req.body;
-  const {product_code, product_name, supplier, quantity} = payload;
-  upsertProduct({product_code, product_name, supplier, quantity}).then(() => {
-    res.send({ status: true, message: 'INSERT THANH CONG'});
-  }).catch((ex) => {
-    console.log("Error happened when create SP", ex);
-    res.send({ status: false, message: "Có lỗi khi tạo sản phẩm" });
-  })
-})
+  const { product_code, product_name, supplier, quantity } = payload;
+  upsertProduct({ product_code, product_name, supplier, quantity })
+    .then(() => {
+      res.send({ status: true, message: "INSERT THANH CONG" });
+    })
+    .catch((ex) => {
+      console.log("Error happened when create SP", ex);
+      res.send({ status: false, message: "Có lỗi khi tạo sản phẩm" });
+    });
+});
 
-router.put('/update/:id', (req, res) => {
+router.put("/update/:id", (req, res) => {
   const payload = req.body;
-  const {id} = req.params;
+  const { id } = req.params;
   if (!id) {
     res.send({
       status: false,
@@ -37,17 +62,19 @@ router.put('/update/:id', (req, res) => {
     });
     return;
   }
-  const {product_code, product_name, supplier, quantity} = payload;
-  upsertProduct({product_code, product_name, supplier, quantity, id}).then(() => {
-    res.send({ status: true, message: 'UPDATE THANH CONG'});
-  }).catch((ex) => {
-    console.log("Error happened when update SP", ex);
-    res.send({ status: false, message: "Có lỗi khi update sản phẩm" });
-  })
-})
+  const { product_code, product_name, supplier, quantity } = payload;
+  upsertProduct({ product_code, product_name, supplier, quantity, id })
+    .then(() => {
+      res.send({ status: true, message: "UPDATE THANH CONG" });
+    })
+    .catch((ex) => {
+      console.log("Error happened when update SP", ex);
+      res.send({ status: false, message: "Có lỗi khi update sản phẩm" });
+    });
+});
 
-router.delete('/delete/:id', (req, res) => {
-  const {id} = req.params; // params là đối tượng lấy tham số từ URL
+router.delete("/delete/:id", (req, res) => {
+  const { id } = req.params; // params là đối tượng lấy tham số từ URL
   if (!id) {
     res.send({
       status: false,
@@ -55,22 +82,24 @@ router.delete('/delete/:id', (req, res) => {
     });
     return;
   }
-  deleteProduct(id).then(() => {
-    res.send({
-      status: true,
-      message: "Xóa thành công",
+  deleteProduct(id)
+    .then(() => {
+      res.send({
+        status: true,
+        message: "Xóa thành công",
+      });
     })
-  }).catch((e) => {
-    console.log("DELETEPRODUCT: ", e);
-    res.send({
-      status: true,
-      message: "Xóa lỗi",
+    .catch((e) => {
+      console.log("DELETEPRODUCT: ", e);
+      res.send({
+        status: true,
+        message: "Xóa lỗi",
+      });
     });
-  })
-})
+});
 
-router.get('/detail/:id', (req, res) => {
-  const {id} = req.params;
+router.get("/detail/:id", (req, res) => {
+  const { id } = req.params;
   if (!id) {
     res.send({
       status: false,
@@ -78,17 +107,19 @@ router.get('/detail/:id', (req, res) => {
     });
     return;
   }
-  findById(id).then(data => {
-    res.send({
-      status: true,
-      data,
+  findById(id)
+    .then((data) => {
+      res.send({
+        status: true,
+        data,
+      });
     })
-  }).catch((ex) => {
-    console.log("VIEW PRODUCT: ", ex);
-    res.send({
-      status: true,
-      message: "Lỗi khi lấy dữ liệu của sản phẩm",
+    .catch((ex) => {
+      console.log("VIEW PRODUCT: ", ex);
+      res.send({
+        status: true,
+        message: "Lỗi khi lấy dữ liệu của sản phẩm",
+      });
     });
-  })
-})
+});
 export default router;
